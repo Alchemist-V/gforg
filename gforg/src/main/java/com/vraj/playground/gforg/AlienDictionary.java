@@ -1,8 +1,12 @@
 package com.vraj.playground.gforg;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,8 +44,8 @@ public class AlienDictionary {
 	Map<Character, Vertex> mapNode = new HashMap<>();
 
 	private static class Vertex {
-		char nodeName;
-		int rank;
+		private char nodeName;
+		private int rank;
 
 		Vertex(char nodeName) {
 			this.nodeName = nodeName;
@@ -91,6 +95,11 @@ public class AlienDictionary {
 			return "Vertex [nodeName=" + nodeName + ", rank=" + rank + "]";
 		}
 
+		public void incrementRank(int rankInc) {
+			this.rank = this.rank + rankInc;
+
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -108,28 +117,43 @@ public class AlienDictionary {
 			compare(dic[i], dic[i + 1]);
 			// System.out.println(mapNode);
 		}
-		directedGraph = reconsileEdges(directedGraph);
-		System.out.println(directedGraph);
+		reconsileEdges(directedGraph);
+		generateSequence(mapNode);
 		return null;
 	}
 
-	private Map<Vertex, Set<Vertex>> reconsileEdges(Map<Vertex, Set<Vertex>> graph) {
-		Map<Vertex, Set<Vertex>> reconsiledGraph = new HashMap<>();
+	private void generateSequence(Map<Character, Vertex> mapNode2) {
+		List<Vertex> vertices = new ArrayList<Vertex>(mapNode.values());
+		Collections.sort(vertices, new Comparator<Vertex>() {
+
+			@Override
+			public int compare(Vertex o1, Vertex o2) {
+				return Integer.compare(o2.getRank(), o1.getRank());
+			}
+		});
+
+		for (Vertex v : vertices) {
+			System.out.print(v.getNodeName());
+		}
+	}
+
+	private void reconsileEdges(Map<Vertex, Set<Vertex>> graph) {
 		for (Entry<Vertex, Set<Vertex>> graphEntry : graph.entrySet()) {
-			reconsiledGraph.put(graphEntry.getKey(), graphEntry.getValue());
+			Set<Vertex> vertices = new HashSet<>();
+			vertices.addAll(graphEntry.getValue());
 			for (Vertex vertex : graphEntry.getValue()) {
-				Set<Vertex> potentialNewEdges = directedGraph.get(vertex);
-				int currentEdgeCount = reconsiledGraph.get(graphEntry.getKey()).size();
-				reconsiledGraph.get(graphEntry.getKey()).addAll(potentialNewEdges);
-				int reconsiledEdgeCount = reconsiledGraph.get(graphEntry.getKey()).size();
-				// entry.getKey().setRank(entry.getKey().getRank() +
-				// (reconsiledEdgeCount - currentEdgeCount));
-				// for (Vertex v : potentialNewEdges) {
-				// v.setRank(v.getRank() - 1);
-				// }
+				Set<Vertex> newEdges = directedGraph.get(vertex);
+				if (newEdges == null) {
+					continue;
+				}
+				for (Vertex newVertex : newEdges) {
+					if (vertices.add(newVertex)) {
+						mapNode.get(newVertex.getNodeName()).incrementRank(-1);
+						mapNode.get(graphEntry.getKey().getNodeName()).incrementRank(1);
+					}
+				}
 			}
 		}
-		return reconsiledGraph;
 	}
 
 	private void compare(String a, String b) {
