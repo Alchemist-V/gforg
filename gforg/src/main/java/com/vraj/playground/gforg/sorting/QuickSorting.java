@@ -14,9 +14,6 @@ public class QuickSorting {
 
 	public void partition(int arr[], int start, int end) {
 
-		if (start == end) {
-			return;
-		}
 		int pivotElement = arr[end];
 		int index = start;
 		for (int i = start; i < end; i++) {
